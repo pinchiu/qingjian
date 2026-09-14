@@ -72,6 +72,15 @@ impl Engine {
         source: InputSource,
         used_sense: Option<usize>,
     ) -> String {
+        let learning_text = if self.traditional {
+            self.opencc_reverse
+                .as_ref()
+                .map(|cc| cc.convert(&candidate.text))
+                .unwrap_or_else(|| candidate.text.clone())
+        } else {
+            candidate.text.clone()
+        };
+
         // 整句不是一个词，不记词频；按路径上的词逐条记转移（喂个人 n-gram），路径要在拼音消耗前重算
         let sentence_words = (candidate.kind == CandidateKind::Sentence)
             .then(|| self.sentence_words(candidate))
@@ -90,7 +99,7 @@ impl Engine {
             CandidateKind::Chinese => {
                 self.learner.record(candidate);
                 let (consumed, input) = self.consumed_by(candidate);
-                self.learner.record_choice(&input, &candidate.text);
+                self.learner.record_choice(&input, &learning_text);
                 typos = self.accepted_typos(candidate);
                 (consumed, input)
             }
@@ -115,19 +124,19 @@ impl Engine {
                 }
                 self.learner.record(candidate);
                 let (consumed, input) = self.whole_scope();
-                self.learner.record_choice(&input, &candidate.text);
+                self.learner.record_choice(&input, &learning_text);
                 (consumed, input)
             }
             // 英文词与快捷候选对应整段作用域；选中的英文词记次数并进个人英文词表，下次同样的前缀它靠前
             CandidateKind::English | CandidateKind::Shortcut | CandidateKind::Custom(_) => {
                 if candidate.kind == CandidateKind::English {
                     self.learner.record(candidate);
-                    self.learner.learn_english(&candidate.text);
+                    self.learner.learn_english(&learning_text);
                 }
                 self.whole_scope()
             }
         };
-        self.apply_retraction(&input, &candidate.text);
+        self.apply_retraction(&input, &learning_text);
         self.recording.clear();
         for (typed, intended) in &typos {
             tracing::debug!(typed, intended, "记录敲错");
@@ -135,8 +144,8 @@ impl Engine {
         }
         let keys =
             self.composition.scope()[..consumed.min(self.composition.scope().len())].to_owned();
-        let log_id = self.log_commit(&keys, &candidate.text, source);
-        self.meter_commit(&candidate.text, source, false);
+        let log_id = self.log_commit(&keys, &learning_text, source);
+        self.meter_commit(&learning_text, source, false);
         // 上屏带译词的中文候选：那一刻用户看着这条译词，记进词汇（英文候选的中文释义不是学习语言，不记）
         if candidate.kind != CandidateKind::English
             && let Some(translation) = &candidate.translation
@@ -156,17 +165,17 @@ impl Engine {
         ) && self.gloss_filler.is_enabled()
             && !self.private
             && self.translator.language() != Language::Chinese
-            && self.translator.translate(&candidate.text).is_none()
+            && self.translator.translate(&learning_text).is_none()
         {
             self.gloss_filler
-                .request(self.translator.language(), &candidate.text);
+                .request(self.translator.language(), &learning_text);
         }
         self.composition.drain_prefix(consumed);
         let buffer_left = !self.composition.is_empty();
         match candidate.kind {
             CandidateKind::Chinese | CandidateKind::Cloud => {
                 self.record_word(
-                    &candidate.text,
+                    &learning_text,
                     &candidate.syllables,
                     EXPLICIT_TRANSITION_WEIGHT,
                     true,
@@ -212,22 +221,22 @@ impl Engine {
         } else {
             None
         };
-        self.punctuation.note_committed(&candidate.text);
-        self.history.record(&candidate.text);
+        self.punctuation.note_committed(&learning_text);
+        self.history.record(&learning_text);
         let learned = matches!(
             candidate.kind,
             CandidateKind::Chinese | CandidateKind::Cloud | CandidateKind::Sentence
         );
         let commit = if learned {
             LastCommit {
-                text: candidate.text.clone(),
-                chars: candidate.text.chars().count(),
+                text: learning_text.clone(),
+                chars: learning_text.chars().count(),
                 input,
                 chosen: matches!(
                     candidate.kind,
                     CandidateKind::Chinese | CandidateKind::Cloud
                 )
-                .then(|| candidate.text.clone()),
+                .then(|| learning_text.clone()),
                 transitions: std::mem::take(&mut self.recording),
                 typos,
                 erased: 0,
@@ -235,7 +244,7 @@ impl Engine {
                 phrase,
             }
         } else {
-            LastCommit::plain(&candidate.text)
+            LastCommit::plain(&learning_text)
         };
         self.remember_commit(commit);
         candidate.text.clone()

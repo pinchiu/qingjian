@@ -56,6 +56,22 @@ impl Engine {
                 .collect(),
             rescored: self.last_rescored.get(),
         });
+
+        if self.traditional
+            && let Some(opencc) = &self.opencc
+        {
+            for candidate in &mut query.candidates.items {
+                if matches!(
+                    candidate.kind,
+                    crate::CandidateKind::Chinese
+                        | crate::CandidateKind::Sentence
+                        | crate::CandidateKind::Cloud
+                ) {
+                    candidate.text = opencc.convert(&candidate.text);
+                }
+            }
+        }
+
         Ok(query)
     }
 

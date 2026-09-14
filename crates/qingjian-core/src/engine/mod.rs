@@ -231,6 +231,15 @@ pub struct Engine {
 
     /// emoji 表，没有就不出 emoji 候选。
     emoji: Option<EmojiTable>,
+
+    /// 繁体输出模式。
+    pub traditional: bool,
+
+    /// 繁体转换器。
+    pub opencc: Option<ferrous_opencc::OpenCC>,
+
+    /// 繁体反向转换器。
+    pub opencc_reverse: Option<ferrous_opencc::OpenCC>,
 }
 
 /// 英文补全最多几条（`compa` → company / compare / …）。
@@ -358,6 +367,9 @@ impl Engine {
             shuangpin: None,
             zhuyin: false,
             emoji: None,
+            traditional: false,
+            opencc: None,
+            opencc_reverse: None,
         }
     }
 }

@@ -32,6 +32,19 @@ impl Engine {
         self.forget_span_cache();
     }
 
+    /// 設置是否啟用繁體輸出模式。
+    pub fn set_traditional_mode(&mut self, on: bool) {
+        self.traditional = on;
+        if on {
+            if self.opencc.is_none() {
+                self.opencc = ferrous_opencc::OpenCC::new("s2twp").ok();
+            }
+            if self.opencc_reverse.is_none() {
+                self.opencc_reverse = ferrous_opencc::OpenCC::new("tw2sp").ok();
+            }
+        }
+    }
+
     /// 目前是否處於注音模式。
     pub fn is_zhuyin_mode(&self) -> bool {
         self.zhuyin
