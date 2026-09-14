@@ -233,13 +233,13 @@ pub struct Engine {
     emoji: Option<EmojiTable>,
 
     /// 繁体输出模式。
-    pub traditional: bool,
+    traditional: bool,
 
     /// 繁体转换器。
-    pub opencc: Option<ferrous_opencc::OpenCC>,
+    opencc: Option<ferrous_opencc::OpenCC>,
 
-    /// 繁体反向转换器。
-    pub opencc_reverse: Option<ferrous_opencc::OpenCC>,
+    /// 繁体反向映射。
+    traditional_map: std::collections::HashMap<String, String>,
 }
 
 /// 英文补全最多几条（`compa` → company / compare / …）。
@@ -369,7 +369,7 @@ impl Engine {
             emoji: None,
             traditional: false,
             opencc: None,
-            opencc_reverse: None,
+            traditional_map: std::collections::HashMap::new(),
         }
     }
 }

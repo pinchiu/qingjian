@@ -57,17 +57,20 @@ impl Engine {
             rescored: self.last_rescored.get(),
         });
 
+        self.traditional_map.clear();
         if self.traditional
             && let Some(opencc) = &self.opencc
         {
             for candidate in &mut query.candidates.items {
                 if matches!(
                     candidate.kind,
-                    crate::CandidateKind::Chinese
-                        | crate::CandidateKind::Sentence
-                        | crate::CandidateKind::Cloud
+                    CandidateKind::Chinese
+                        | CandidateKind::Sentence
+                        | CandidateKind::Cloud
                 ) {
-                    candidate.text = opencc.convert(&candidate.text);
+                    let traditional_text = opencc.convert(&candidate.text);
+                    self.traditional_map.insert(traditional_text.clone(), candidate.text.clone());
+                    candidate.text = traditional_text;
                 }
             }
         }

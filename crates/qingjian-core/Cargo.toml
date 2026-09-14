@@ -10,7 +10,7 @@ repository.workspace = true
 workspace = true
 
 [dependencies]
-ferrous-opencc = "0.4.0"
+ferrous-opencc.workspace = true
 foldhash.workspace = true
 jiff.workspace = true
 qingjian-dictionary.workspace = true
