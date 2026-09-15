@@ -37,7 +37,7 @@ impl Engine {
         self.traditional = on;
         if on {
             if self.opencc.is_none() {
-                self.opencc = ferrous_opencc::OpenCC::from_config(ferrous_opencc::BuiltinConfig::S2twp).ok();
+                self.opencc = ferrous_opencc::OpenCC::from_config(ferrous_opencc::config::BuiltinConfig::S2tw).ok();
             }
         }
     }

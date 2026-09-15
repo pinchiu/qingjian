@@ -239,7 +239,7 @@ pub struct Engine {
     opencc: Option<ferrous_opencc::OpenCC>,
 
     /// 繁体反向映射。
-    traditional_map: std::collections::HashMap<String, String>,
+    traditional_map: std::cell::RefCell<std::collections::HashMap<String, String>>,
 }
 
 /// 英文补全最多几条（`compa` → company / compare / …）。
@@ -369,7 +369,7 @@ impl Engine {
             emoji: None,
             traditional: false,
             opencc: None,
-            traditional_map: std::collections::HashMap::new(),
+            traditional_map: std::cell::RefCell::new(std::collections::HashMap::new()),
         }
     }
 }

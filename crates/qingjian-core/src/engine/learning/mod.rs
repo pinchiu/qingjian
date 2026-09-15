@@ -142,7 +142,7 @@ impl Engine {
     pub fn forget(&mut self, candidate: &Candidate) -> Forgotten {
         let mut candidate_owned = candidate.clone();
         if self.traditional {
-            if let Some(simp) = self.traditional_map.get(&candidate_owned.text) {
+            if let Some(simp) = self.traditional_map.borrow().get(&candidate_owned.text) {
                 candidate_owned.text = simp.clone();
             }
         }

@@ -18,8 +18,9 @@ impl Engine {
         let mut hits = 0;
         for candidate in &mut list.items {
             let mut text = candidate.text.as_str();
+            let traditional_map = self.traditional_map.borrow();
             if self.traditional {
-                if let Some(simp) = self.traditional_map.get(text) {
+                if let Some(simp) = traditional_map.get(text) {
                     text = simp.as_str();
                 }
             }
@@ -81,7 +82,7 @@ impl Engine {
         let traditional_text = candidate.text.clone();
         let mut candidate_owned = candidate.clone();
         if self.traditional {
-            if let Some(simp) = self.traditional_map.get(&candidate_owned.text) {
+            if let Some(simp) = self.traditional_map.borrow().get(&candidate_owned.text) {
                 candidate_owned.text = simp.clone();
             }
         }
@@ -235,7 +236,7 @@ impl Engine {
         let commit = if learned {
             LastCommit {
                 text: candidate.text.clone(),
-                chars: candidate.text.chars().count(),
+                chars: traditional_text.chars().count(),
                 input,
                 chosen: matches!(
                     candidate.kind,
@@ -249,7 +250,9 @@ impl Engine {
                 phrase,
             }
         } else {
-            LastCommit::plain(&candidate.text)
+            let mut plain = LastCommit::plain(&candidate.text);
+            plain.chars = traditional_text.chars().count();
+            plain
         };
         self.remember_commit(commit);
         traditional_text

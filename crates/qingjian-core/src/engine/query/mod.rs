@@ -57,7 +57,7 @@ impl Engine {
             rescored: self.last_rescored.get(),
         });
 
-        self.traditional_map.clear();
+        self.traditional_map.borrow_mut().clear();
         if self.traditional
             && let Some(opencc) = &self.opencc
         {
@@ -69,7 +69,7 @@ impl Engine {
                         | CandidateKind::Cloud
                 ) {
                     let traditional_text = opencc.convert(&candidate.text);
-                    self.traditional_map.insert(traditional_text.clone(), candidate.text.clone());
+                    self.traditional_map.borrow_mut().insert(traditional_text.clone(), candidate.text.clone());
                     candidate.text = traditional_text;
                 }
             }
