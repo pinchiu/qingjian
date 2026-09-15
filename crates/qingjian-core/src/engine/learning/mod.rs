@@ -141,10 +141,10 @@ impl Engine {
     /// 整句、快捷候选、emoji 没什么可删。删完缓存作废，它也不再当下一个词的上文。
     pub fn forget(&mut self, candidate: &Candidate) -> Forgotten {
         let mut candidate_owned = candidate.clone();
-        if self.traditional {
-            if let Some(simp) = self.traditional_map.borrow().get(&candidate_owned.text) {
-                candidate_owned.text = simp.clone();
-            }
+        if self.traditional
+            && let Some(simp) = self.traditional_map.borrow().get(&candidate_owned.text)
+        {
+            candidate_owned.text = simp.clone();
         }
         let candidate = &candidate_owned;
         let forgotten = match candidate.kind {

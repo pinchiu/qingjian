@@ -196,18 +196,23 @@ impl Engine {
                         });
                     }
                 }
-                if self.traditional && self.last_prediction_kind != PredictionKind::Translate {
-                    if let Some(opencc) = &self.opencc {
-                        for word in &mut prediction.words {
-                            let traditional = opencc.convert(&word.text);
-                            self.traditional_map.borrow_mut().insert(traditional.clone(), word.text.clone());
-                            word.text = traditional;
-                        }
-                        if let Some(sentence) = &mut prediction.sentence {
-                            let traditional = opencc.convert(sentence);
-                            self.traditional_map.borrow_mut().insert(traditional.clone(), sentence.clone());
-                            *sentence = traditional;
-                        }
+                if self.traditional
+                    && self.last_prediction_kind != PredictionKind::Translate
+                    && let Some(opencc) = &self.opencc
+                {
+                    for word in &mut prediction.words {
+                        let traditional = opencc.convert(&word.text);
+                        self.traditional_map
+                            .borrow_mut()
+                            .insert(traditional.clone(), word.text.clone());
+                        word.text = traditional;
+                    }
+                    if let Some(sentence) = &mut prediction.sentence {
+                        let traditional = opencc.convert(sentence);
+                        self.traditional_map
+                            .borrow_mut()
+                            .insert(traditional.clone(), sentence.clone());
+                        *sentence = traditional;
                     }
                 }
                 return Some(prediction);
@@ -247,9 +252,14 @@ impl Engine {
     /// 标点处断句，句尾是标点时之后的词按句首记。整句退格删光再重打时这些转移一并退回。
     pub fn accept_prediction(&mut self, text: &str) -> String {
         let traditional_text = text.to_owned();
-        let mut original_text_owned;
+        let original_text_owned;
         let text = if self.traditional {
-            original_text_owned = self.traditional_map.borrow().get(text).cloned().unwrap_or_else(|| text.to_owned());
+            original_text_owned = self
+                .traditional_map
+                .borrow()
+                .get(text)
+                .cloned()
+                .unwrap_or_else(|| text.to_owned());
             &original_text_owned
         } else {
             text

@@ -19,28 +19,22 @@ impl Engine {
         for candidate in &mut list.items {
             let mut text = candidate.text.as_str();
             let traditional_map = self.traditional_map.borrow();
-            if self.traditional {
-                if let Some(simp) = traditional_map.get(text) {
-                    text = simp.as_str();
-                }
+            if self.traditional
+                && let Some(simp) = traditional_map.get(text)
+            {
+                text = simp.as_str();
             }
             candidate.translation = match candidate.kind {
                 CandidateKind::Custom(_) => None,
                 // 英文候选按敲的大小写显示（Company / COMPANY），释义表键是小写
-                CandidateKind::English => self
-                    .english_translator
-                    .translate(text)
-                    .or_else(|| {
-                        self.english_translator
-                            .translate(&text.to_ascii_lowercase())
-                    }),
-                _ => self
-                    .translator
-                    .translate(text)
-                    .map(|mut translation| {
-                        self.mark_fresh(&mut translation);
-                        translation
-                    }),
+                CandidateKind::English => self.english_translator.translate(text).or_else(|| {
+                    self.english_translator
+                        .translate(&text.to_ascii_lowercase())
+                }),
+                _ => self.translator.translate(text).map(|mut translation| {
+                    self.mark_fresh(&mut translation);
+                    translation
+                }),
             };
             hits += usize::from(candidate.translation.is_some());
         }
@@ -81,10 +75,10 @@ impl Engine {
     ) -> String {
         let traditional_text = candidate.text.clone();
         let mut candidate_owned = candidate.clone();
-        if self.traditional {
-            if let Some(simp) = self.traditional_map.borrow().get(&candidate_owned.text) {
-                candidate_owned.text = simp.clone();
-            }
+        if self.traditional
+            && let Some(simp) = self.traditional_map.borrow().get(&candidate_owned.text)
+        {
+            candidate_owned.text = simp.clone();
         }
         let candidate = &candidate_owned;
         // 整句不是一个词，不记词频；按路径上的词逐条记转移（喂个人 n-gram），路径要在拼音消耗前重算

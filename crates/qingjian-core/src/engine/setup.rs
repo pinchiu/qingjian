@@ -35,10 +35,10 @@ impl Engine {
     /// 設置是否啟用繁體輸出模式。
     pub fn set_traditional_mode(&mut self, on: bool) {
         self.traditional = on;
-        if on {
-            if self.opencc.is_none() {
-                self.opencc = ferrous_opencc::OpenCC::from_config(ferrous_opencc::config::BuiltinConfig::S2tw).ok();
-            }
+        if on && self.opencc.is_none() {
+            self.opencc =
+                ferrous_opencc::OpenCC::from_config(ferrous_opencc::config::BuiltinConfig::S2tw)
+                    .ok();
         }
     }
 

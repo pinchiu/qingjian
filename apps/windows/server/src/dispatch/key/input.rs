@@ -164,9 +164,8 @@ impl Router {
             self.engine.note_passthrough(c);
             return with_prefix(raw, Effect::Passthrough, c);
         }
-        let is_zhuyin_key = self.engine.is_zhuyin_mode() && (
-            c.is_ascii_digit() || matches!(c, '-' | ';' | ',' | '.' | '/')
-        );
+        let is_zhuyin_key = self.engine.is_zhuyin_mode()
+            && (c.is_ascii_digit() || matches!(c, '-' | ';' | ',' | '.' | '/'));
         if c.is_ascii_lowercase() || is_zhuyin_key {
             self.engine.push(c);
             return Effect::Changed(None);

@@ -64,12 +64,12 @@ impl Engine {
             for candidate in &mut query.candidates.items {
                 if matches!(
                     candidate.kind,
-                    CandidateKind::Chinese
-                        | CandidateKind::Sentence
-                        | CandidateKind::Cloud
+                    CandidateKind::Chinese | CandidateKind::Sentence | CandidateKind::Cloud
                 ) {
                     let traditional_text = opencc.convert(&candidate.text);
-                    self.traditional_map.borrow_mut().insert(traditional_text.clone(), candidate.text.clone());
+                    self.traditional_map
+                        .borrow_mut()
+                        .insert(traditional_text.clone(), candidate.text.clone());
                     candidate.text = traditional_text;
                 }
             }
