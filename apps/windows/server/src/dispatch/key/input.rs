@@ -102,10 +102,14 @@ impl Router {
                 Effect::Changed(None)
             }
             codes::RETURN => {
-                if event.modifiers.shift {
-                    Effect::Changed(Some(self.engine.take_raw()))
+                if self.engine.is_zhuyin_mode() {
+                    if event.modifiers.shift {
+                        Effect::Changed(Some(self.engine.take_raw()))
+                    } else {
+                        Effect::Changed(Some(self.commit_highlighted()))
+                    }
                 } else {
-                    Effect::Changed(Some(self.commit_highlighted()))
+                    Effect::Changed(Some(self.engine.take_raw()))
                 }
             }
             codes::TAB if self.engine.english_mode() => {
