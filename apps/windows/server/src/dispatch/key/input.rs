@@ -101,7 +101,13 @@ impl Router {
                 self.engine.clear();
                 Effect::Changed(None)
             }
-            codes::RETURN => Effect::Changed(Some(self.engine.take_raw())),
+            codes::RETURN => {
+                if event.modifiers.shift {
+                    Effect::Changed(Some(self.engine.take_raw()))
+                } else {
+                    Effect::Changed(Some(self.commit_highlighted()))
+                }
+            }
             codes::TAB if self.engine.english_mode() => {
                 Effect::Changed(Some(self.commit_highlighted()))
             }
