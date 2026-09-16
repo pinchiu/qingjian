@@ -57,7 +57,6 @@ impl Engine {
             rescored: self.last_rescored.get(),
         });
 
-        self.traditional_map.borrow_mut().clear();
         if self.traditional
             && let Some(opencc) = &self.opencc
         {
